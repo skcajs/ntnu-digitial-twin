@@ -8,7 +8,7 @@ extend({ Water });
 function Ocean() {
     const ref = useRef();
     const gl = useThree((state) => state.gl);
-    const waterNormals = useLoader(THREE.TextureLoader, '/waternormals.jpeg');
+    const waterNormals = useLoader(THREE.TextureLoader, '/waternormals.png');
     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
     const geom = useMemo(() => new THREE.PlaneGeometry(10000, 10000), []);
     const config = useMemo(
@@ -25,7 +25,7 @@ function Ocean() {
         }),
         [gl.encoding, waterNormals]
     );
-    useFrame((state, delta) => { ref.current.material.uniforms.time.value += delta; });
+    useFrame((state, delta) => { ref.current.material.uniforms.time.value += delta * 0.2; });
     return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} />;
 }
 
