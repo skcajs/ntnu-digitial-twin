@@ -1,23 +1,23 @@
-import logo from './logo.svg';
 import './App.css';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Sky } from '@react-three/drei';
+import CustomMesh from './components/CustomMesh';
+import Ocean from './components/Ocean';
+import { Suspense } from 'react';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div id="canvas-container" style={{ width: "100vw", height: "100vh" }}>
+      <Canvas camera={{ position: [0, 5, 50], fov: 55, near: 1, far: 20000 }}>
+        <ambientLight intensity={0.1} />
+        <directionalLight color="red" position={[0, 0, 5]} />
+        <OrbitControls makeDefault />
+        <Sky />
+        <Suspense fallback={null}>
+          <Ocean />
+        </Suspense>
+        <CustomMesh />
+      </Canvas>
     </div>
   );
 }
