@@ -2,8 +2,10 @@ import './App.css';
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Sky } from '@react-three/drei';
-import CustomMesh from './components/CustomMesh';
+
 import Ocean from './components/Ocean';
+import Boat from './components/Boat';
+
 
 function App() {
   return (
@@ -12,10 +14,10 @@ function App() {
         <Suspense fallback={null}>
           <ambientLight intensity={0.1} />
           <directionalLight color="red" position={[0, 0, 5]} />
-          <OrbitControls makeDefault />
+          <OrbitControls makeDefault minDistance={10} maxDistance={100} maxPolarAngle={1.5} />
           <Sky />
           <Ocean />
-          <CustomMesh />
+          <Boat />
         </Suspense>
       </Canvas>
     </div>
