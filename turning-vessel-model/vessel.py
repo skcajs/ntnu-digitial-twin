@@ -13,32 +13,37 @@ class Vessel:
     B = np.concatenate((B1,B2))
 
     def __init__(self):
-        self.p = np.array([[0], [0], [0]]) # x,y,psi
-        self.v = np.array([[0], [0], [0]]) # u,v,r
+        self._x = np.array([[0], [0], [0], [0], [0], [0]]) # x,y,psi,u,v,r
         
     def D(self):
-        return np.array([[self.Xu+self.Xuu*np.abs(float(self.v[0])), 0, 0], 
-            [0, self.Yv+self.Yvv*np.abs(float(self.v[1])), self.Yr],
-            [0, self.Nv, self.Nr+self.Nrr*np.abs(float(self.v[2]))]])
+        return np.array([[self.Xu+self.Xuu*np.abs(float(self._x[3])), 0, 0], 
+            [0, self.Yv+self.Yvv*np.abs(float(self._x[4])), self.Yr],
+            [0, self.Nv, self.Nr+self.Nrr*np.abs(float(self._x[5]))]])
 
 
     def C(self):
-        c13 = -self.m22* self.v[2] - ((self.m23+self.m32)/2) * self.v[2]
-        c23 = self.m11*self.v[0]
+        c13 = -self.m22* self._x[4] - ((self.m23+self.m32)/2) * self._x[5]
+        c23 = self.m11*self._x[3]
         return np.array([[0,0,c13],
             [0,0, c23],
             [-c13,-c23,0]],  dtype=float)
 
     def R(self):
-        return np.array([[np.cos(float(self.p[2])), -np.sin(float(self.p[2])), 0],
-                    [np.sin(float(self.p[2])), np.cos(float(self.p[2])), 0],
+        return np.array([[np.cos(float(self._x[2])), -np.sin(float(self._x[2])), 0],
+                    [np.sin(float(self._x[2])), np.cos(float(self._x[2])), 0],
                     [0,0,1]],  dtype=float)
 
     def F(self):
-        F1 = self.R().dot(self.v)
-        F2 = -self.M_inv.dot((self.C() - self.D()).dot(self.v))
+        v = np.array([[float(self.x[3])], 
+                 [float(self.x[4])], 
+                 [float(self.x[5])]],  dtype=float)
+        F1 = self.R().dot(v)
+        F2 = -self.M_inv.dot((self.C() - self.D()).dot(v))
         return np.concatenate((F1,F2))
     
-    def Update(self, X):
-        self.p = X[:2]
-        self.v = X[3:]
+    def Update(self, x):
+        self._x = x
+
+    @property
+    def x(self):
+        return self._x

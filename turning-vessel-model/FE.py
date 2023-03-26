@@ -3,17 +3,15 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def predict(t):
-    X = np.array([[0],[0],[0],[0],[0],[0]])
     u = np.array([[1],[-1]], dtype=float)
     vs = Vessel()
     ti = 0
     dt = 0.1
     while ti < t:
-        X = vs.A.dot(X) + dt*vs.F() + dt*vs.B.dot(u) # Forward Euler
-        xtab_FE.append(X)    
-        ttab_FE.append(t)
-        vs.Update(X)
-        t = t + dt 
+        vs.Update(vs.A.dot(vs.x) + dt*vs.F() + dt*vs.B.dot(u))
+        xtab_FE.append(vs.x)
+        ttab_FE.append(ti)
+        ti += dt 
 
 def plot_results():
 
