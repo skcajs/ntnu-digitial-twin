@@ -24,9 +24,9 @@ class Vessel:
     def C(self):
         c13 = -self.m22* self._x[4] - ((self.m23+self.m32)/2) * self._x[5]
         c23 = self.m11*self._x[3]
-        return np.array([[0,0,c13],
-            [0,0, c23],
-            [-c13,-c23,0]],  dtype=float)
+        return np.array([[0,0,float(c13)],
+            [0,0, float(c23)],
+            [-float(c13),-float(c23),0]],  dtype=float)
 
     def R(self):
         return np.array([[np.cos(float(self._x[2])), -np.sin(float(self._x[2])), 0],
