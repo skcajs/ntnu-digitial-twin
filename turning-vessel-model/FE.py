@@ -2,16 +2,15 @@ from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
 
-def predict(t):
-    u = np.array([[1],[-1]], dtype=float)
-    vs = Vessel()
-    ti = 0
-    dt = 0.1
-    while ti < t:
+def predict(t_tot, t, dt, u, vs):
+    xtab_FE = []
+    ttab_FE = []
+    while t < t_tot:
         vs.Update(vs.A.dot(vs.x) + dt*vs.F() + dt*vs.B.dot(u))
         xtab_FE.append(vs.x)
-        ttab_FE.append(ti)
-        ti += dt 
+        ttab_FE.append(t)
+        t += dt 
+    return xtab_FE, ttab_FE
 
 def plot_results():
 
@@ -51,7 +50,10 @@ def plot_results():
     plt.show()
 
 if __name__ == '__main__':
-    xtab_FE = []
-    ttab_FE = []
-    predict(20)
+    xtab_FE, ttab_FE = predict(
+        t_tot = 20, 
+        t = 0, 
+        dt = 0.1, 
+        u = np.array([[1],[-0.01]], dtype=float), 
+        vs= Vessel())
     plot_results()
