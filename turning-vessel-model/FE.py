@@ -1,17 +1,22 @@
 from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
+import sympy as sp
+
 
 def predict(t):
-    u = np.array([[1],[-1]], dtype=float)
     vs = Vessel()
+    print(vs.x[3])
     ti = 0
     dt = 0.1
     while ti < t:
-        vs.Update(vs.A.dot(vs.x) + dt*vs.F() + dt*vs.B.dot(u))
+        vs.Update(vs.A * (vs.x)+ dt*vs.F() + dt*vs.B*vs.u)
         xtab_FE.append(vs.x)
         ttab_FE.append(ti)
         ti += dt 
+
+
+
 
 def plot_results():
 
