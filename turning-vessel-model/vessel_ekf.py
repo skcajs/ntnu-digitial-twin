@@ -25,7 +25,7 @@ class Vessel:
     def __init__(self):
         self._x = sp.Matrix([[0], [0], [0], [0], [0], [0]]) # x,y,psi,u,v,r
         self.u = sp.Matrix([[1],[-1]], dtype=float) # input
-        self.x_, self.y, self.psi, self.u, self.v, self.r = sp.symbols('x y psi u v r')
+        self.x_, self.y, self.psi, self.u, self.v, self.r = sp.symbols('x y psi u v r', real = True)
         self.x_jac = sp.Matrix([self.x_,self.y,self.psi,self.u,self.v,self.r])
         self._Pplus = 0
         self.Upsilon = 0

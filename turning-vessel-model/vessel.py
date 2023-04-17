@@ -17,15 +17,15 @@ class Vessel:
     llambda = 0.998 # updated
 
     def __init__(self):
-        self._x = sp.Matrix([[0.1], [0.1], [0.1],[0.1],[0.1],[0.1]])
+        self._x = sp.Matrix([[0],[0],[0],[0],[0],[0]])
         self.u_input = sp.Matrix([[1],[-1]], dtype=float) # input
-        self.x_, self.y, self.psi, self.u, self.v, self.r = sp.symbols('x y psi u v r')
+        self.x_, self.y, self.psi, self.u, self.v, self.r = sp.symbols('x y psi u v r',real = True)
         self.x_jac = sp.Matrix([self.x_,self.y,self.psi,self.u,self.v,self.r])
            
     def D(self):
-        return sp.Matrix([[self.Xu+self.Xuu*sp.Abs(self.u), 0, 0], 
-            [0, self.Yv+self.Yvv*sp.Abs(self.v), self.Yr],
-            [0, self.Nv, self.Nr+self.Nrr*sp.Abs(self.r)]])
+        return sp.Matrix([[self.Xu+self.Xuu*(self.u), 0, 0], 
+            [0, self.Yv+self.Yvv*(self.v), self.Yr],
+            [0, self.Nv, self.Nr+self.Nrr*(self.r)]])
 
     def C(self):
         c13 = -self.m22* self.v - ((self.m23+self.m32)/2) * self.r
@@ -64,12 +64,8 @@ class Vessel:
         dfdx_atx = sp.Matrix(Jf(float(self._x[0]),float(self._x[1]),float(self._x[2]),float(self._x[3]),float(self._x[4]),float(self._x[5]))) # numerical jacobian @ xk
         return self.A + dfdx_atx
 
-    def ytilde(self, Rf):
-        mean = np.zeros(6)
-        covariance = Rf
-        Vk = sp.Matrix(np.random.multivariate_normal(mean, np.array(covariance)))
-        yk = self.Cobvs * self._x + Vk
-        return yk - self.Cobvs * self._x
+    def ytilde(self, y): 
+        return y - (self.Cobvs * self._x)
 
     def Update(self, x):
         self._x = x
