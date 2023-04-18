@@ -14,7 +14,7 @@ def hello_world():
         t_tot=20,
         t=0,
         dt=0.1,
-        u=np.array([[1], [-0.01]], dtype=float),
+        u=np.array([[1], [-1]], dtype=float),
         vs=Vessel())
 
     new_dict = {}

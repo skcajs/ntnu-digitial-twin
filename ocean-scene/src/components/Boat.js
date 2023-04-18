@@ -39,8 +39,8 @@ export default function Model(props) {
         const a = clock.getElapsedTime();
         const key = String(Math.round(a * 10) / 10);
         if (Object.keys(data).includes(key)) {
-            group.current.position.z = data[key]['x'] * 100;
-            group.current.position.x = data[key]['y'] * 100;
+            group.current.position.z = data[key]['x'];
+            group.current.position.x = data[key]['y'];
             group.current.rotation.y = data[key]['psi'];
         }
     });
@@ -53,6 +53,7 @@ export default function Model(props) {
                 receiveShadow
                 geometry={nodes.Plane015_Ships_0.geometry}
                 material={materials.Ships}
+                scale={0.5}
             />
         </group>
     );
