@@ -11,33 +11,32 @@ def predict(t):
     vs_exact = Vessel()
     ti = 0
     dt = 0.01
-    Sk = sp.eye(2) # depends on number of inputs (inputsxinputs)
-    Pplus = sp.eye(6) # covariance matrix, states x states 
-    Upsilon = sp.zeros(6,2) # 6 rows and 2 columns, states x inputs
-    theta = sp.Matrix([[0],[0]]) # fault in any of the control inputs so same shape as inputs
-    Qf = 0.0001*sp.eye(6) # shape proportional to number of states
-    Rf =  0.0001*sp.eye(6) # shape proportional to number of outputs
+    Sk = np.eye(2) # depends on number of inputs (inputsxinputs)
+    Pplus = np.eye(6) # covariance matrix, states x states 
+    Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
+    theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
+    Qf = 0.0001*np.eye(6) # shape proportional to number of states
+    Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
     a = 1 # random factor that they do not explain anyways
 
 
     while ti < t:
-        vs_exact.Update(vs_exact.A * (vs_exact.x) + dt*vs_exact.F() + dt*vs_exact.B*vs_exact.u_input) # calcualtes x
-        y = vs_exact.Cobvs * vs_exact.x
-        Pminus = vs.Fk() * Pplus * vs.Fk().T + Qf
-        Sigma = vs.Cobvs * Pminus * vs.Cobvs.T + Rf
-        K = Pminus * vs.Cobvs.T*Sigma.inv()
-        Pplus = (sp.eye(6) - (K*vs.Cobvs))*Pminus
-        Upsilon =  ((sp.eye(6) - K * vs.Cobvs) * vs.Fk()*Upsilon) + (sp.eye(6) - K * vs.Cobvs) * vs.phi()
-        Omega = vs.Cobvs * vs.Fk() * Upsilon + vs.Cobvs * vs.phi()
-        Lambda = ((vs.llambda * Sigma) + (Omega*Sk*Omega.T)).inv()
-        Tau = Sk * Omega.T * Lambda
-        Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T*Lambda*Omega*Sk 
+        vs_exact.Update(vs_exact.A @ vs_exact.x + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
+        y = vs_exact.Cobvs @ vs_exact.x
+        Pminus = vs.Fk() @ Pplus @ vs.Fk().T + Qf
+        Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
+        K = Pminus @ vs.Cobvs.T @ np.linalg.inv(Sigma)
+        Pplus = (np.eye(6) - (K @ vs.Cobvs)) @ Pminus
+        Omega = vs.Cobvs @ vs.Fk() @ Upsilon + vs.Cobvs @ vs.phi()
+        Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk() @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
+        Lambda = np.linalg.inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
+        Tau = Sk @ Omega.T @ Lambda
+        Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
         thetak = theta # saving the previous theta
-        theta = theta + Tau*vs.ytilde(y)
-        Qf = a*Qf + (1-a) * (K*vs.ytilde(y)*vs.ytilde(y).T*K)
-        Rf = a*Rf + (1-a) * (vs.ytilde(y)*vs.ytilde(y).T + vs.Cobvs*Pplus*vs.Cobvs.T)
-
-        vs.Update(vs.A * vs.x + vs_exact.F() + vs.B*vs.u_input + vs.phi()*theta + K*vs.ytilde(y) + Upsilon*(theta - thetak)) # calcualtes x_hat
+        theta = theta + Tau@vs.ytilde(y)
+        Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
+        Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
+        vs.Update(vs.A @ vs.x + vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
 
         xtab_FE.append(vs_exact.x)
         ttab_FE.append(ti)
@@ -96,5 +95,6 @@ if __name__ == '__main__':
     xtab_FE = []
     ttab_FE = []
     xhatt = []
-    predict(3)
+    predict(20)
+    print(xtab_FE)
     plot_results()
