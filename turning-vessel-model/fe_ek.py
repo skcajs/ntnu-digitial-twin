@@ -4,7 +4,6 @@
 from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
-import sympy as sp
 
 def predict(t):
     vs = Vessel()
@@ -21,14 +20,14 @@ def predict(t):
 
 
     while ti < t:
-        vs_exact.Update(vs_exact.A @ vs_exact.x + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
-        y = vs_exact.Cobvs @ vs_exact.x
-        Pminus = vs.Fk() @ Pplus @ vs.Fk().T + Qf
+        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
+        y = vs_exact.Cobvs @ vs_exact.X
+        Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
         Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
         K = Pminus @ vs.Cobvs.T @ np.linalg.inv(Sigma)
         Pplus = (np.eye(6) - (K @ vs.Cobvs)) @ Pminus
-        Omega = vs.Cobvs @ vs.Fk() @ Upsilon + vs.Cobvs @ vs.phi()
-        Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk() @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
+        Omega = vs.Cobvs @ vs.Fk(dt) @ Upsilon + vs.Cobvs @ vs.phi()
+        Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk(dt) @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
         Lambda = np.linalg.inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
         Tau = Sk @ Omega.T @ Lambda
         Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
@@ -36,11 +35,12 @@ def predict(t):
         theta = theta + Tau@vs.ytilde(y)
         Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
         Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
-        vs.Update(vs.A @ vs.x + vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
+        vs.Update(vs.A @ vs.X + dt*vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
 
-        xtab_FE.append(vs_exact.x)
+        xtab_FE.append(vs_exact.X)
         ttab_FE.append(ti)
-        xhatt.append(vs.x)
+        xhatt.append(vs.X)
+        print(vs.X, vs_exact.X)
         ti += dt 
         print('running t=', ti)
 
@@ -61,7 +61,7 @@ def plot_results():
 
     ax1 = fig.add_subplot(1, 2, 1)
     ax1.plot(xtab_plot[:,0,:].flatten(), xtab_plot[:,1,:].flatten(), label = 'x', color = CB91_Blue)
-    ax1.plot(xhatt_plot[:,0,:].flatten(), xhatt_plot[:,1,:].flatten(), label = 'x_hat', color = CB91_Blue, linestyle = 'dotted')
+    ax1.plot(xhatt_plot[:,0,:].flatten(), xhatt_plot[:,1,:].flatten(), label = 'x_hat', color = 'black', linestyle = 'dotted')
     ax1.grid()
     ax1.legend()
     ax1.set_title('Vessel\'s XY plot')
@@ -96,5 +96,4 @@ if __name__ == '__main__':
     ttab_FE = []
     xhatt = []
     predict(20)
-    print(xtab_FE)
     plot_results()

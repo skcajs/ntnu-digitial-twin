@@ -1,7 +1,5 @@
 import numpy as np
-import sympy as sp
 import random
-from sympy.utilities.lambdify import lambdastr
 random.seed(10)
 class Vessel:
 
@@ -19,36 +17,39 @@ class Vessel:
 
     def __init__(self):
         self._x = np.array([[0.],[0.],[0.],[0.],[0.],[0.]], dtype = float)
-        self.xx, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self.x[4][0],self._x[5][0]
+        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
         self.u_input = np.array([[1],[-1]], dtype=float) # input
            
     def D(self):
-        return np.array([[self.Xu+self.Xuu*self.u, 0, 0], 
-            [0, self.Yv+self.Yvv*self.v, self.Yr],
-            [0, self.Nv, self.Nr+self.Nrr*self.r]])
+        return np.array([[self.Xu+self.Xuu*np.abs(float(self._x[3])), 0, 0], 
+            [0, self.Yv+self.Yvv*np.abs(float(self._x[4])), self.Yr],
+            [0, self.Nv, self.Nr+self.Nrr*np.abs(float(self._x[5]))]])
+
 
     def C(self):
-        c13 = -self.m22 * self.v - ((self.m23+self.m32)/2) * self.r
-        c23 = self.m11 * self.u
-        return np.array([[0,0,c13],
-            [0,0, c23],
-            [-c13,-c23,0]])
+        c13 = -self.m22* self._x[4] - ((self.m23+self.m32)/2) * self._x[5]
+        c23 = self.m11*self._x[3]
+        return np.array([[0,0,float(c13)],
+            [0,0, float(c23)],
+            [-float(c13),-float(c23),0]],  dtype=float)
 
     def R(self):
-        return np.array([[np.cos(self.psi), -np.sin(self.psi), 0],
-                    [np.sin(self.psi), np.cos(self.psi), 0],
-                    [0,0,1]])
-    
+        return np.array([[np.cos(float(self._x[2])), -np.sin(float(self._x[2])), 0],
+                    [np.sin(float(self._x[2])), np.cos(float(self._x[2])), 0],
+                    [0,0,1]],  dtype=float)
+
     def F(self):
-        gnu = np.array([[self.u],[self.v],[self.r]])
-        F1 = self.R() @ gnu
-        F2 = -self.M_inv @ ((self.C() - self.D()) @ gnu)    
-        return  np.array(np.concatenate((F1,F2))) 
+        v = np.array([[float(self._x[3])], 
+                 [float(self._x[4])], 
+                 [float(self._x[5])]],  dtype=float)
+        F1 = self.R().dot(v)
+        F2 = -self.M_inv.dot((self.C() - self.D()).dot(v))
+        return np.concatenate((F1,F2))
        
-    def phi(self)
+    def phi(self):
         return -self.B @ np.diag(*self.u_input.T) 
     
-    def Fk(self):
+    def Fk(self, dt):
 
         dfdx_num = np.array([[0, 0, -self.u*np.sin(self.psi) - self.v*np.cos(self.psi), np.cos(self.psi), -np.sin(self.psi), 0], 
           [0, 0, self.u*np.cos(self.psi) - self.v*np.sin(self.psi), np.sin(self.psi), np.cos(self.psi), 0], 
@@ -56,7 +57,7 @@ class Vessel:
           [0, 0, 0, -0.162790697674419*self.u - 0.465116279069767, 1.31007751937984*self.r, 0.48062015503876*self.r + 1.31007751937984*self.v], 
           [0, 0, 0, -0.597432905484248*self.r + 0.904317386231039*self.v, 0.904317386231039*self.u - 0.452887981330222*self.v - 0.798935239206535, 0.022607934655776*self.r - 0.597432905484248*self.u + 0.0464556592765461], 
           [0, 0, 0, -0.904317386231039*self.r - 4.92998833138856*self.v, -4.92998833138856*self.u + 1.01735705950992*self.v + 1.61355017502917, -0.123249708284714*self.r - 0.904317386231039*self.u - 0.285516336056009]])
-        return self.A + dfdx_num
+        return self.A + dt*dfdx_num
 
     def ytilde(self, y): 
         return y - (self.Cobvs @ self._x)
@@ -65,6 +66,6 @@ class Vessel:
         self._x = x
 
     @property
-    def x(self):
+    def X(self):
         return self._x
     
