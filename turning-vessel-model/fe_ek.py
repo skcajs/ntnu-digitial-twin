@@ -23,28 +23,31 @@ def predict(t):
     while ti < t:
         vs_exact.Update(vs_exact.A * (vs_exact.x) + dt*vs_exact.F() + dt*vs_exact.B*vs_exact.u_input) # calcualtes x
         y = vs_exact.Cobvs * vs_exact.x
+
         Pminus = vs.Fk() * Pplus * vs.Fk().T + Qf
         Sigma = vs.Cobvs * Pminus * vs.Cobvs.T + Rf
         K = Pminus * vs.Cobvs.T*Sigma.inv()
         Pplus = (sp.eye(6) - (K*vs.Cobvs))*Pminus
-        Upsilon =  ((sp.eye(6) - K * vs.Cobvs) * vs.Fk()*Upsilon) + (sp.eye(6) - K * vs.Cobvs) * vs.phi()
+
         Omega = vs.Cobvs * vs.Fk() * Upsilon + vs.Cobvs * vs.phi()
+        Upsilon =  ((sp.eye(6) - K * vs.Cobvs) * vs.Fk()*Upsilon) + (sp.eye(6) - K * vs.Cobvs) * vs.phi()
         Lambda = ((vs.llambda * Sigma) + (Omega*Sk*Omega.T)).inv()
         Tau = Sk * Omega.T * Lambda
-        Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T*Lambda*Omega*Sk 
+        Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T*Lambda*Omega*Sk
+        
         thetak = theta # saving the previous theta
         theta = theta + Tau*vs.ytilde(y)
         Qf = a*Qf + (1-a) * (K*vs.ytilde(y)*vs.ytilde(y).T*K)
         Rf = a*Rf + (1-a) * (vs.ytilde(y)*vs.ytilde(y).T + vs.Cobvs*Pplus*vs.Cobvs.T)
 
-        vs.Update(vs.A * vs.x + vs_exact.F() + vs.B*vs.u_input + vs.phi()*theta + K*vs.ytilde(y) + Upsilon*(theta - thetak)) # calcualtes x_hat
+        vs.Update(vs.A * vs.x + vs_exact.F() + vs.B*vs.u_input + vs.phi()*thetak + K*vs.ytilde(y) + Upsilon*(theta - thetak)) # calcualtes x_hat
 
         xtab_FE.append(vs_exact.x)
         ttab_FE.append(ti)
         xhatt.append(vs.x)
         ti += dt 
         print('running t=', ti)
-
+        
 
 def plot_results():
 
@@ -96,5 +99,5 @@ if __name__ == '__main__':
     xtab_FE = []
     ttab_FE = []
     xhatt = []
-    predict(3)
+    predict(20)
     plot_results()
