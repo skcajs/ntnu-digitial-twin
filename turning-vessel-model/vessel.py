@@ -50,7 +50,6 @@ class Vessel:
         return -self.B @ np.diag(*self.u_input.T) 
     
     def Fk(self, dt):
-
         dfdx_num = np.array([[0, 0, -self.u*np.sin(self.psi) - self.v*np.cos(self.psi), np.cos(self.psi), -np.sin(self.psi), 0], 
           [0, 0, self.u*np.cos(self.psi) - self.v*np.sin(self.psi), np.sin(self.psi), np.cos(self.psi), 0], 
           [0, 0, 0, 0, 0, 1], 
@@ -64,6 +63,7 @@ class Vessel:
 
     def Update(self, x):
         self._x = x
+        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
 
     @property
     def X(self):

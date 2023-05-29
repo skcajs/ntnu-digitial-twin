@@ -9,14 +9,14 @@ def predict(t):
     vs = Vessel()
     vs_exact = Vessel()
     ti = 0
-    dt = 0.01
+    dt = 1.0/30.0
     Sk = np.eye(2) # depends on number of inputs (inputsxinputs)
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
     theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
     Qf = 0.0001*np.eye(6) # shape proportional to number of states
     Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
-    a = 1 # random factor that they do not explain anyways
+    a = 1 # random factor that they do not explain
 
 
     while ti < t:
@@ -54,8 +54,9 @@ def plot_results():
     CB91_Amber = '#F5B14C'
 
     xtab_plot = np.array(xtab_FE)
-    ttab_plot = np.array(ttab_FE)
     xhatt_plot = np.array(xhatt)
+    ttab_plot = np.around(np.array(ttab_FE), 3)
+    
 
     fig = plt.figure(figsize=(12, 4))
 
