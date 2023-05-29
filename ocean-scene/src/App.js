@@ -14,7 +14,7 @@ function App() {
         <Suspense fallback={null}>
           <ambientLight intensity={0.1} />
           <directionalLight color="red" position={[0, 0, 5]} />
-          <OrbitControls makeDefault minDistance={10} maxDistance={100} maxPolarAngle={1.5} />
+          <OrbitControls makeDefault minDistance={10} maxDistance={100} maxPolarAngle={1.4} />
           <Sky />
           <Ocean />
           <Boat />
