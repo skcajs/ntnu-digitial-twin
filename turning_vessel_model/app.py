@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 import numpy as np
-from FE import predict
+from fe_ek import predict
 from vessel import Vessel
 
 app = Flask(__name__)
@@ -10,25 +10,25 @@ CORS(app)
 
 @app.route("/sim")
 def hello_world():
-    xtab_FE, ttab_FE = predict(
+    timestamp, x_state, x_hat = predict(
         t_tot=20,
         t=0,
-        dt=0.1,
+        dt=1.0/60.0,
         u=np.array([[1], [-1]], dtype=float),
         vs=Vessel())
 
     new_dict = {}
 
-    for i in range(len(ttab_FE)):
+    for i in range(len(timestamp)):
         inner_dict = {}
-        inner_dict['x'] = xtab_FE[i][0][0]
-        inner_dict['y'] = xtab_FE[i][1][0]
-        inner_dict['psi'] = xtab_FE[i][2][0]
-        inner_dict['u'] = xtab_FE[i][3][0]
-        inner_dict['c'] = xtab_FE[i][4][0]
-        inner_dict['r'] = xtab_FE[i][5][0]
-        inner_dict['t'] = round(ttab_FE[i], 1)
-        new_dict[round(ttab_FE[i], 1)] = inner_dict
+        inner_dict['x'] = x_state[i][0][0]
+        inner_dict['y'] = x_state[i][1][0]
+        inner_dict['psi'] = x_state[i][2][0]
+        inner_dict['u'] = x_state[i][3][0]
+        inner_dict['v'] = x_state[i][4][0]
+        inner_dict['r'] = x_state[i][5][0]
+        inner_dict['t'] = round(timestamp[i], 1)
+        new_dict[round(timestamp[i], 1)] = inner_dict
 
     return (new_dict)
 

@@ -6,6 +6,11 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def predict(t):
+
+    timestamp = []
+    x_state = []
+    x_hat = []
+
     vs = Vessel()
     vs_exact = Vessel()
     ti = 0
@@ -37,12 +42,13 @@ def predict(t):
         Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
         vs.Update(vs.A @ vs.X + dt*vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
 
-        xtab_FE.append(vs_exact.X)
-        ttab_FE.append(ti)
-        xhatt.append(vs.X)
-        print(vs.X, vs_exact.X)
+        timestamp.append(ti)
+        x_state.append(vs_exact.X)
+        x_hat.append(vs.X)
+
         ti += dt 
-        print('running t=', ti)
+
+    return np.around(np.array(timestamp), 3), np.array(x_state), np.array(x_hat)
 
 
 def plot_results():
@@ -50,12 +56,11 @@ def plot_results():
     CB91_Blue = '#2CBDFE'
     CB91_Green = '#47DBCD'
     CB91_Purple = '#9D2EC5'
-    CB91_Violet = '#661D98'
     CB91_Amber = '#F5B14C'
 
-    xtab_plot = np.array(xtab_FE)
-    xhatt_plot = np.array(xhatt)
-    ttab_plot = np.around(np.array(ttab_FE), 3)
+    xtab_plot = x_state
+    xhatt_plot = x_hat
+    ttab_plot = timestamp
     
 
     fig = plt.figure(figsize=(12, 4))
@@ -93,8 +98,5 @@ def plot_results():
     plt.show()
 
 if __name__ == '__main__':
-    xtab_FE = []
-    ttab_FE = []
-    xhatt = []
-    predict(20)
+    timestamp, x_state, x_hat = predict(20)
     plot_results()
