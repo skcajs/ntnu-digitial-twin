@@ -1,50 +1,33 @@
-// import { useLoader } from '@react-three/fiber';
-// import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-
-// function Boat() {
-//     const gltf = useLoader(GLTFLoader, "./origami_boat.glb");
-//     return (
-//         <>
-//             <primitive position={[0, 0.01, 0]} object={gltf.scene} scale={10} />
-//         </>
-//     );
-// };
-
-// export default Boat;
-
-
-
-import React, { useRef, useEffect, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import axios from "axios";
+import { Context } from "../App";
 
 export default function Model(props) {
-    const [data, setData] = useState({});
+    const [frame, setFrame] = useState(0);
     const group = useRef();
+    const tick = useRef(0);
+    const tock = useRef(0);
     const { nodes, materials } = useGLTF("/origami_boat.glb");
 
-    const myReallyBadHardCodedAPIPath = "http://localhost:4999";
+    const data = useContext(Context)
 
-    useEffect(() => {
-        axios.get(`${myReallyBadHardCodedAPIPath}/sim`).then(
-            function (result) {
-                const data = result;
-                setData(data.data);
+    useFrame((state, delta) => {
+        tick.current += delta
+        if (tick.current - tock.current > 0.01) {
+            if (Object.keys(data).length && frame < Object.keys(data).length) {
+                group.current.position.z = data[frame]['x'] * 100;
+                group.current.position.x = data[frame]['y'] * 100;
+                group.current.rotation.y = data[frame]['psi'];
+                setFrame(frame+1)
             }
-        );
-    });
+            tock.current = tick.current
+        }
 
-    useFrame(({ clock }) => {
-        const a = clock.getElapsedTime();
-        const key = String(Math.round(a * 10) / 10);
-        if (Object.keys(data).includes(key)) {
-            group.current.position.z = data[key]['x'];
-            group.current.position.x = data[key]['y'];
-            group.current.rotation.y = data[key]['psi'];
+        if(frame >= Object.keys(data).length) {
+            setFrame(0)
         }
     });
-
 
     return (
         <group ref={group} {...props} dispose={null} scale={0.4}>

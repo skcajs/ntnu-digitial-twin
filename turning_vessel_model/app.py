@@ -11,11 +11,10 @@ CORS(app)
 @app.route("/sim")
 def hello_world():
     timestamp, x_state, x_hat = predict(
-        t_tot=20,
-        t=0,
-        dt=1.0/60.0,
-        u=np.array([[1], [-1]], dtype=float),
-        vs=Vessel())
+        t_tot=40,
+        ti=0,
+        dt=0.01,
+        u_input=np.array([[1], [-0.02]], dtype=float))
 
     new_dict = {}
 
@@ -27,8 +26,8 @@ def hello_world():
         inner_dict['u'] = x_state[i][3][0]
         inner_dict['v'] = x_state[i][4][0]
         inner_dict['r'] = x_state[i][5][0]
-        inner_dict['t'] = round(timestamp[i], 1)
-        new_dict[round(timestamp[i], 1)] = inner_dict
+        inner_dict['t'] = timestamp[i]
+        new_dict[i] = inner_dict
 
     return (new_dict)
 

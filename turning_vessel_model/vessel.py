@@ -15,10 +15,10 @@ class Vessel:
     Cobvs = np.array([[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0], [0,0,0,1,0,0], [0,0,0,0,1,0], [0,0,0,0,0,1]]) # C has dimensions outputs x inputs
     llambda = 0.998 # updated
 
-    def __init__(self):
+    def __init__(self, u_input):
         self._x = np.array([[0.],[0.],[0.],[0.],[0.],[0.]], dtype = float)
         self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
-        self.u_input = np.array([[1],[-1]], dtype=float) # input
+        self.u_input = u_input # input
            
     def D(self):
         return np.array([[self.Xu+self.Xuu*np.abs(float(self._x[3])), 0, 0], 
@@ -64,6 +64,9 @@ class Vessel:
     def Update(self, x):
         self._x = x
         self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
+
+    def updateInput(self, u):
+        self.u_input = u
 
     @property
     def X(self):

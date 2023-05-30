@@ -5,16 +5,14 @@ from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
 
-def predict(t):
+def predict(t_tot, ti, dt, u_input):
 
     timestamp = []
     x_state = []
     x_hat = []
 
-    vs = Vessel()
-    vs_exact = Vessel()
-    ti = 0
-    dt = 1.0/30.0
+    vs = Vessel(u_input)
+    vs_exact = Vessel(u_input)
     Sk = np.eye(2) # depends on number of inputs (inputsxinputs)
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
@@ -23,8 +21,24 @@ def predict(t):
     Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
     a = 1 # random factor that they do not explain
 
+    time_range = t_tot / dt
+    i = 0
 
-    while ti < t:
+    while ti < t_tot:
+
+        if(i == int(time_range / 8)):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.01, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+        if(i == int(time_range / 4)):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.2, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+        if(i == int(time_range / 2)):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+        if(i == int(time_range * 3 / 4)):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.05, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+
         vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
         y = vs_exact.Cobvs @ vs_exact.X
         Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
@@ -46,9 +60,11 @@ def predict(t):
         x_state.append(vs_exact.X)
         x_hat.append(vs.X)
 
+        i += 1
+
         ti += dt 
 
-    return np.around(np.array(timestamp), 3), np.array(x_state), np.array(x_hat)
+    return np.array(timestamp).round(2), np.array(x_state), np.array(x_hat)
 
 
 def plot_results():
@@ -98,5 +114,9 @@ def plot_results():
     plt.show()
 
 if __name__ == '__main__':
-    timestamp, x_state, x_hat = predict(20)
+    timestamp, x_state, x_hat = predict(
+        t_tot=40,
+        ti=0,
+        dt=0.01,
+        u_input=np.array([[1], [-0.02]], dtype=float))
     plot_results()
