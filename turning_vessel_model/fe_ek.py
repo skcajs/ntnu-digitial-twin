@@ -62,9 +62,10 @@ def predict(t_tot, ti, dt, u_input):
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
         if(i == 4000):
-            u_input = np.array([[1], [-0.2]], dtype=float)
+            u_input = np.array([[1], [-0.02]], dtype=float)
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
+            theta = np.array([[0],[0]])
 
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
@@ -77,14 +78,17 @@ def predict(t_tot, ti, dt, u_input):
         Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
         K = Pminus @ vs.Cobvs.T @ inv(Sigma)
         Pplus = (np.eye(6) - (K @ vs.Cobvs)) @ Pminus
-        Omega = vs.Cobvs @ vs.Fk(dt) @ Upsilon + vs.Cobvs @ vs.phi()
+
+        Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
+        Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
+
         Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk(dt) @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
+        Omega = vs.Cobvs @ vs.Fk(dt) @ Upsilon + vs.Cobvs @ vs.phi()
+        
         Lambda = inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
         Tau = Sk @ Omega.T @ Lambda
         Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
         thetahat = thetahat + Tau @ vs.ytilde(y)
-        Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
-        Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
 
         vs.Update(vs.A @ vs.X + dt*vs.F() + vs.B @ vs.u_input + vs.phi() @ thetahat + K @ vs.ytilde(y) + Upsilon @ Tau @ vs.ytilde(y)) # calcualtes x_hat
 
