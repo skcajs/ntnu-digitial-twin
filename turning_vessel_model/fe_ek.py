@@ -12,6 +12,8 @@ def predict(t_tot, ti, dt, u_input):
     timestamp = []
     x_state = []
     x_hat = []
+    theta_array = []
+    theta_hat = []
 
     vs = Vessel(u_input)
     vs_exact = Vessel(u_input)
@@ -67,12 +69,14 @@ def predict(t_tot, ti, dt, u_input):
         timestamp.append(ti)
         x_state.append(vs_exact.X)
         x_hat.append(vs.X)
+        theta_array.append(theta)
+        theta_hat.append(thetak)
 
         i += 1
 
         ti += dt 
 
-    return np.array(timestamp).round(2), np.array(x_state), np.array(x_hat)
+    return np.array(timestamp).round(2), np.array(x_state), np.array(x_hat), np.array(theta_array), np.array(theta_hat)
 
 
 def plot_results():
@@ -121,10 +125,37 @@ def plot_results():
     fig.suptitle('Vessel Dynamics')
     plt.show()
 
+def theta_plots():
+
+    fig2, axs = plt.subplots(2,1)
+    ttab_plot = timestamp
+    theta_plot = theta_array
+    thetahat_plot = thetahat
+
+    axs[0].plot(ttab_plot, theta_plot[:,0,:].flatten(),label = '$\Theta_1$', color = 'black')
+    axs[0].plot(ttab_plot, thetahat_plot[:,0,:].flatten(),label = '$\Theta_1$ hat', color = 'red')
+    axs[0].set_title('$\Theta$')
+    axs[0].set_xlabel('Time [s]')
+    axs[0].legend()
+    axs[0].set_ylabel('$\Theta$')
+    
+    axs[1].plot(ttab_plot, theta_plot[:,1,:].flatten(),label = '$\Theta_2$', color = 'black')
+    axs[1].plot(ttab_plot, thetahat_plot[:,1,:].flatten(),label = '$\Theta_2$ hat', color = 'red')
+    axs[1].set_title('$\Theta$')
+    axs[1].set_xlabel('Time [s]')
+    axs[1].legend()
+    axs[1].set_ylabel('$\Theta$')
+
+    plt.subplots_adjust(hspace=0.5)
+
+    plt.show()
+
+
 if __name__ == '__main__':
-    timestamp, x_state, x_hat = predict(
-        t_tot=40,
+    timestamp, x_state, x_hat, theta_array, thetahat = predict(
+        t_tot=40, 
         ti=0,
         dt=0.01,
         u_input=np.array([[1], [0]], dtype=float))
     plot_results()
+    theta_plots()
