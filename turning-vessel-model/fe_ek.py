@@ -14,9 +14,9 @@ def predict(t):
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
     theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
-    Qf = 0.0001*np.eye(6) # shape proportional to number of states
-    Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
-    a = 1 # random factor that they do not explain anyways
+    Qf = 0.01*np.eye(6) # shape proportional to number of states
+    Rf =  0.01*np.eye(6) # shape proportional to number of outputs
+    a = 0.995 # random factor that they do not explain anyways
 
 
     while ti < t:
@@ -40,7 +40,6 @@ def predict(t):
         xtab_FE.append(vs_exact.X)
         ttab_FE.append(ti)
         xhatt.append(vs.X)
-        print(vs.X, vs_exact.X)
         ti += dt 
         print('running t=', ti)
 
@@ -90,6 +89,13 @@ def plot_results():
     fig.tight_layout()
     fig.suptitle('Vessel Dynamics')
     plt.show()
+
+def theta_plot():
+    fig = plt.figure(figsize=(12, 4))
+    ax1 = fig.add_subplot(2, 2, 1)
+    
+
+    return
 
 if __name__ == '__main__':
     xtab_FE = []
