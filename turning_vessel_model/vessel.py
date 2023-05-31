@@ -13,7 +13,7 @@ class Vessel:
     B2 = M_inv @ Btau
     B = np.array(np.concatenate((B1,B2)))
     Cobvs = np.array([[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0], [0,0,0,1,0,0], [0,0,0,0,1,0], [0,0,0,0,0,1]]) # C has dimensions outputs x inputs
-    llambda = 0.998 # updated
+    llambda = 0.995 # updated
 
     def __init__(self, u_input):
         self._x = np.array([[0.],[0.],[0.],[0.],[0.],[0.]], dtype = float)
