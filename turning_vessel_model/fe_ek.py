@@ -21,7 +21,7 @@ def predict(t_tot, ti, dt, u_input):
     theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
     Qf = 0.01*np.eye(6) # shape proportional to number of states
     Rf =  0.04*np.eye(6) # shape proportional to number of outputs
-    a = 1 # random factor that they do not explain
+    a = 0.99 # random factor that they do not explain
 
     time_range = t_tot / dt
     i = 0
@@ -42,9 +42,8 @@ def predict(t_tot, ti, dt, u_input):
         #     theta = np.array([[0],[0.2]])
         # if(i == int(time_range * 3 / 4)):
         #     u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.4, 0.2)]], dtype=float)
-        #     vs_exact.updateInput(u_input)
-   
-        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt * vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta ) # calcualtes x  dt * Qf @ np.random.rand(6,1)
+        #     vs_exact.updateInput(u_input) 
+        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt * vs_exact.B @ vs_exact.u_input) # + vs_exact.phi() @ theta) #+ dt * Qf @ np.random.rand(6,1)) # calcualtes x  dt * Qf @ np.random.rand(6,1)
         y = vs_exact.Cobvs @ vs_exact.X #+ (dt*Rf)@np.random.rand(6,1) 
         Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
         Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
@@ -56,10 +55,11 @@ def predict(t_tot, ti, dt, u_input):
         Tau = (Sk @ Omega.T) @ Lambda
         Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Sk@Omega.T@Lambda@Omega@Sk
         thetak = theta # saving the previous theta
+        # print(theta)
         theta = theta + Tau @ vs.ytilde(y)
         Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
         Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
-        vs.Update(vs.A @ vs.X + dt * vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ Tau @ vs.ytilde(y)) # calcualtes x_hat
+        vs.Update(vs.A @ vs.X + dt * vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon@(thetak-theta)) #@ Tau @ vs.ytilde(y)) # calcualtes x_hat
         timestamp.append(ti)
         x_state.append(vs_exact.X)
         x_hat.append(vs.X)
