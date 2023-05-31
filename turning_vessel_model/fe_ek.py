@@ -27,16 +27,16 @@ def predict(t_tot, ti, dt, u_input):
     while ti < t_tot:
 
         if(i == int(time_range / 8)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.01, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0] + 2], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
         if(i == int(time_range / 4)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.2, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0] - 2], [min(u_input[1][0] + 0.3, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
         if(i == int(time_range / 2)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.2, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
         if(i == int(time_range * 3 / 4)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.05, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.4, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
 
         vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
