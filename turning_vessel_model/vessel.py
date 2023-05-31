@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import inv
 import random
 random.seed(10)
 class Vessel:
@@ -8,7 +9,7 @@ class Vessel:
     A = np.eye(6)
     Btau = np.array([[1,0],[0,0],[0,1]])
     M = np.array([[m11, 0, 0],[0, m22, m23],[0, m32, m33]])
-    M_inv = np.linalg.inv(M) # inverse of M 
+    M_inv = inv(M) # inverse of M 
     B1 = np.zeros((3,2))
     B2 = M_inv @ Btau
     B = np.array(np.concatenate((B1,B2)))
@@ -21,7 +22,7 @@ class Vessel:
         self.u_input = u_input # input
            
     def D(self):
-        return np.array([[self.Xu+self.Xuu*np.abs(float(self._x[3])), 0, 0], 
+        return -np.array([[self.Xu+self.Xuu*np.abs(float(self._x[3])), 0, 0], 
             [0, self.Yv+self.Yvv*np.abs(float(self._x[4])), self.Yr],
             [0, self.Nv, self.Nr+self.Nrr*np.abs(float(self._x[5]))]])
 
@@ -43,7 +44,7 @@ class Vessel:
                  [float(self._x[4])], 
                  [float(self._x[5])]],  dtype=float)
         F1 = self.R().dot(v)
-        F2 = -self.M_inv.dot((self.C() - self.D()).dot(v))
+        F2 = -self.M_inv.dot((self.C() + self.D()).dot(v))
         return np.concatenate((F1,F2))
        
     def phi(self):

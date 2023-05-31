@@ -4,6 +4,7 @@
 from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
+from numpy.linalg import inv
 
 def predict(t_tot, ti, dt, u_input):
 
@@ -29,35 +30,39 @@ def predict(t_tot, ti, dt, u_input):
         if(i == int(time_range / 8)):
             u_input = np.array([[u_input[0][0] + 2], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
             theta = np.array([[0.3],[0.25]])
         if(i == int(time_range / 4)):
             u_input = np.array([[u_input[0][0] - 2], [min(u_input[1][0] + 0.3, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
             theta = np.array([[0.2],[0.45]])
         if(i == int(time_range / 2)):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.2, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
             theta = np.array([[0.3],[0.65]])
         if(i == int(time_range * 3 / 4)):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.4, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
 
         vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
         y = vs_exact.Cobvs @ vs_exact.X
         Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
         Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
-        K = Pminus @ vs.Cobvs.T @ np.linalg.inv(Sigma)
+        K = Pminus @ vs.Cobvs.T @ inv(Sigma)
         Pplus = (np.eye(6) - (K @ vs.Cobvs)) @ Pminus
         Omega = vs.Cobvs @ vs.Fk(dt) @ Upsilon + vs.Cobvs @ vs.phi()
         Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk(dt) @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
-        Lambda = np.linalg.inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
+        Lambda = inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
         Tau = Sk @ Omega.T @ Lambda
         Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
         thetak = theta # saving the previous theta
         theta = theta + Tau@vs.ytilde(y)
         Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
         Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
-        vs.Update(vs.A @ vs.X + dt*vs_exact.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
+        vs.Update(vs.A @ vs.X + dt*vs.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
 
         timestamp.append(ti)
         x_state.append(vs_exact.X)
