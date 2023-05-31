@@ -14,7 +14,7 @@ def hello_world():
         t_tot=40,
         ti=0,
         dt=0.01,
-        u_input=np.array([[1], [-0.02]], dtype=float))
+        u_input=np.array([[1], [0]], dtype=float))
 
     new_dict = {}
 

@@ -5,6 +5,7 @@ from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
 from numpy.linalg import inv
+from numpy.random import randn
 
 def predict(t_tot, ti, dt, u_input):
 
@@ -18,6 +19,7 @@ def predict(t_tot, ti, dt, u_input):
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
     theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
+    thetahat = np.array([[0],[0]])
     Qf = 0.0001*np.eye(6) # shape proportional to number of states
     Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
     a = 1 # random factor that they do not explain
@@ -28,27 +30,25 @@ def predict(t_tot, ti, dt, u_input):
     while ti < t_tot:
 
         if(i == int(time_range / 8)):
-            u_input = np.array([[u_input[0][0] + 2], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.01, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
-            theta = np.array([[0.3],[0.25]])
         if(i == int(time_range / 4)):
-            u_input = np.array([[u_input[0][0] - 2], [min(u_input[1][0] + 0.3, 0.2)]], dtype=float)
-            vs_exact.updateInput(u_input)
-            vs.updateInput(u_input)
-            theta = np.array([[0.2],[0.45]])
+            theta = np.array([[0],[0.12]])
         if(i == int(time_range / 2)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.2, 0.2)]], dtype=float)
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.1, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
-            theta = np.array([[0.3],[0.65]])
         if(i == int(time_range * 3 / 4)):
-            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.4, 0.2)]], dtype=float)
-            vs_exact.updateInput(u_input)
-            vs.updateInput(u_input)
+            theta = np.array([[0],[0.025]])
 
-        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
-        y = vs_exact.Cobvs @ vs_exact.X
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
+        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta + Qf  @ (dt * randn(6,1))) # calcualtes x
+
+        y = vs_exact.Cobvs @ vs_exact.X + Rf  @ (dt * randn(6,1))
+
         Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
         Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
         K = Pminus @ vs.Cobvs.T @ inv(Sigma)
@@ -58,11 +58,11 @@ def predict(t_tot, ti, dt, u_input):
         Lambda = inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
         Tau = Sk @ Omega.T @ Lambda
         Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
-        thetak = theta # saving the previous theta
-        theta = theta + Tau@vs.ytilde(y)
+        thetahat = thetahat + Tau @ vs.ytilde(y)
         Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
         Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
-        vs.Update(vs.A @ vs.X + dt*vs.F() + vs.B @ vs.u_input + vs.phi() @ thetak + K @ vs.ytilde(y) + Upsilon @ (theta - thetak)) # calcualtes x_hat
+
+        vs.Update(vs.A @ vs.X + dt*vs.F() + vs.B @ vs.u_input + vs.phi() @ thetahat + K @ vs.ytilde(y) + Upsilon @ Tau @ vs.ytilde(y)) # calcualtes x_hat
 
         timestamp.append(ti)
         x_state.append(vs_exact.X)
@@ -126,5 +126,5 @@ if __name__ == '__main__':
         t_tot=40,
         ti=0,
         dt=0.01,
-        u_input=np.array([[1], [-0.02]], dtype=float))
+        u_input=np.array([[1], [0]], dtype=float))
     plot_results()
