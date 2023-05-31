@@ -29,12 +29,15 @@ def predict(t_tot, ti, dt, u_input):
         if(i == int(time_range / 8)):
             u_input = np.array([[u_input[0][0] + 2], [min(u_input[1][0] - 0.1, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            theta = np.array([[0.3],[0.25]])
         if(i == int(time_range / 4)):
             u_input = np.array([[u_input[0][0] - 2], [min(u_input[1][0] + 0.3, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            theta = np.array([[0.2],[0.45]])
         if(i == int(time_range / 2)):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.2, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
+            theta = np.array([[0.3],[0.65]])
         if(i == int(time_range * 3 / 4)):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.4, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
