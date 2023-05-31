@@ -16,8 +16,8 @@ export default function Model(props) {
         tick.current += delta
         if (tick.current - tock.current > 0.01) {
             if (Object.keys(data).length && frame < Object.keys(data).length) {
-                group.current.position.z = data[frame]['x'] * 100;
-                group.current.position.x = data[frame]['y'] * 100;
+                group.current.position.z = data[frame]['x'] * 200;
+                group.current.position.x = data[frame]['y'] * 200;
                 group.current.rotation.y = data[frame]['psi'];
                 setFrame(frame+1)
             }

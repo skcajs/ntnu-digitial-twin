@@ -8,7 +8,7 @@ function Path() {
     const group = useRef();
     const points = []
     if (Object.keys(data).length) {
-        Object.keys(data).forEach((key, index) => points.push( new THREE.Vector3(data[key]['y'] * 100, 1, data[key]['x'] * 100)))
+        Object.keys(data).forEach((key, index) => points.push( new THREE.Vector3(data[key]['y'] * 200, 1, data[key]['x'] * 200)))
     }
 
     const lineGeometry = new THREE.BufferGeometry().setFromPoints(points)

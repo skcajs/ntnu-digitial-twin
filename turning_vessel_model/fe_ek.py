@@ -31,18 +31,40 @@ def predict(t_tot, ti, dt, u_input):
 
     while ti < t_tot:
 
-        if(i == int(time_range / 8)):
+        if(i == 100):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.01, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
-        if(i == int(time_range / 4)):
-            theta = np.array([[0],[0.12]])
-        if(i == int(time_range / 2)):
+        if(i == 600):
+            theta = np.array([[0.001],[0.12]])
+        if(i == 1000):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.1, 0.2)]], dtype=float)
             vs_exact.updateInput(u_input)
             vs.updateInput(u_input)
-        if(i == int(time_range * 3 / 4)):
+        if(i == 2000):
             theta = np.array([[0],[0.025]])
+        if(i == 2500):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.2, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
+        if(i == 3000):
+            u_input = np.array([[u_input[0][0]], [min(u_input[1][0] - 0.05, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
+        if(i == 3200):
+            u_input = np.array([[2], [min(u_input[1][0] - 0.25, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
+        if(i == 3600):
+            theta = np.array([[0.005],[0.075]])
+        if(i == 3800):
+            u_input = np.array([[-1], [min(u_input[1][0] - 0.4, 0.2)]], dtype=float)
+            vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
+        if(i == 4000):
+            u_input = np.array([[1], [-0.2]], dtype=float)
+            vs_exact.updateInput(u_input)
+            vs.updateInput(u_input)
 
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
@@ -70,7 +92,7 @@ def predict(t_tot, ti, dt, u_input):
         x_state.append(vs_exact.X)
         x_hat.append(vs.X)
         theta_array.append(theta)
-        theta_hat.append(thetak)
+        theta_hat.append(thetahat)
 
         i += 1
 
@@ -158,4 +180,4 @@ if __name__ == '__main__':
         dt=0.01,
         u_input=np.array([[1], [0]], dtype=float))
     plot_results()
-    theta_plots()
+    # theta_plots()

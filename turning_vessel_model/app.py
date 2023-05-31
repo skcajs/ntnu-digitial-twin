@@ -10,8 +10,8 @@ CORS(app)
 
 @app.route("/sim")
 def hello_world():
-    timestamp, x_state, x_hat = predict(
-        t_tot=40,
+    timestamp, x_state, x_hat, theta, theta_hat = predict(
+        t_tot=80,
         ti=0,
         dt=0.01,
         u_input=np.array([[1], [0]], dtype=float))

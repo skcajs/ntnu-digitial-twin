@@ -48,6 +48,7 @@ class Vessel:
         return np.concatenate((F1,F2))
        
     def phi(self):
+        phi = -self.B @ np.diag(*self.u_input.T)
         return -self.B @ np.diag(*self.u_input.T) 
     
     def Fk(self, dt):
