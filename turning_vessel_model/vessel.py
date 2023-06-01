@@ -15,8 +15,8 @@ class Vessel:
     B = np.array(np.concatenate((B1,B2)))
 
     def __init__(self, u_input):
-        self._x = np.array([[0.],[0.],[0.],[0.],[0.],[0.]], dtype = float)
-        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
+        self._x = np.zeros(6)
+        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0],self._x[1],self._x[2],self._x[3],self._x[4],self._x[5]
         self.u_input = u_input # input
            
     def D(self, xi):
@@ -36,20 +36,19 @@ class Vessel:
             [-float(c13),-float(c23),0]],  dtype=float)
 
     def R(self):
-        return np.array([[np.cos(float(self._x[2])), -np.sin(float(self._x[2])), 0],
-                    [np.sin(float(self._x[2])), np.cos(float(self._x[2])), 0],
-                    [0,0,1]],  dtype=float)
+        return np.array([
+            [np.cos(float(self._x[2])), -np.sin(float(self._x[2])), 0],
+            [np.sin(float(self._x[2])), np.cos(float(self._x[2])), 0],
+            [0,0,1]],  dtype=float)
 
     def F(self, xi):
-        v = np.array([[float(self._x[3])], 
-                 [float(self._x[4])], 
-                 [float(self._x[5])]],  dtype=float)
+        v = np.array([float(self._x[3]), float(self._x[4]), float(self._x[5])],  dtype=float)
         F1 = self.R().dot(v)
         F2 = -self.M_inv.dot((self.C() + self.D(xi)).dot(v))
         return np.concatenate((F1,F2))
        
     def phi(self):
-        return -self.B @ np.diag(*self.u_input.T) 
+        return -self.B @ np.diag(self.u_input.T) 
     
     def Fk(self, dt):
         dfdx_num = np.array([
@@ -60,18 +59,6 @@ class Vessel:
             [0, 0, 0, -0.597432905484248*self.r + 0.904317386231039*self.v, 0.904317386231039*self.u - 0.452887981330222*self.v - 0.798935239206535, 0.022607934655776*self.r - 0.597432905484248*self.u + 0.0464556592765461], 
             [0, 0, 0, -0.904317386231039*self.r - 4.92998833138856*self.v, -4.92998833138856*self.u + 1.01735705950992*self.v + 1.61355017502917, -0.123249708284714*self.r - 0.904317386231039*self.u - 0.285516336056009]])
         
-        # dfdx = np.array([
-        #     [0, 0, -np.sin(self._x[2][0]) * self._x[3][0] - np.cos(self._x[2][0]) * self._x[4][0], np.cos(self._x[2][0]), -np.sin(self._x[2][0]), 0],
-        #     [0, 0, np.cos(self._x[2][0]) * self._x[3][0] - np.sin(self._x[2][0]) * self._x[4][0], np.sin(self._x[2][0]), np.cos(self._x[2][0]), 0], 
-        #     [0, 0, 0, 0, 0, 1],
-        #     [-self.M_inv @ np.array([[0, 0, 0, self.Xu+2 * self.Xuu * abs(self._x[3][0]), -self.m22*self._x[5][0], -self.m22 * self._x[4][0] - (self.m23+self.m32) * self._x[5][0]], 
-        #     [0, 0, 0, self.Yr * self._x[5][0] + self.m11 * self._x[5][0], self.Yv + 2*self.Yvv*abs(self._x[4][0]), self.Yr+self.m11*self._x[3][0]], 
-        #     [0, 0, 0, self.m22*self._x[4][0]+((self.m23+self.m32)/2)*self._x[5][0]-self.m11*self._x[4][0], self.m22*self._x[3][0]+self.Nv-self.m11*self._x[3][0], ((self.m23+self.m32)/2)*self._x[3][0]+self.Nr+2*self.Nrr*abs(self._x[5][0])]])]
-        # ])
-
-        # dfdx_num = np.array([dfdx[0], dfdx[1], dfdx[2], dfdx[3][0], dfdx[3][1], dfdx[3][2]])
-        # dfdx_num = np.array([dfdx[0], dfdx[1], dfdx[2], dfdx[3][0][0], dfdx[3][0][1], dfdx[3][0][2]])
-        
         return self.A + dt*dfdx_num
 
     def ytilde(self, y): 
@@ -79,7 +66,7 @@ class Vessel:
 
     def Update(self, x):
         self._x = x
-        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0][0],self._x[1][0],self._x[2][0],self._x[3][0],self._x[4][0],self._x[5][0]
+        self.x, self.y, self.psi, self.u, self.v, self.r = self._x[0],self._x[1], self._x[2], self._x[3], self._x[4], self._x[5]
 
     def updateInput(self, u):
         self.u_input = u
