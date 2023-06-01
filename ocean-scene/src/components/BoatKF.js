@@ -1,11 +1,12 @@
 import React, { useContext, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useGLTF, Html } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { Context } from "../App";
 import { StateContext } from "../App";
+import { Material } from "three";
 
 
-export default function Boat(props) {
+export default function BoatKF(props) {
     const [frame, setFrame] = useState(0);
     const group = useRef();
     const tick = useRef(0);
@@ -21,9 +22,9 @@ export default function Boat(props) {
             if (Object.keys(data).length && frame < Object.keys(data).length) {
                 group.current.position.z = data[frame]['x'] * 200;
                 group.current.position.x = data[frame]['y'] * 200;
+                group.current.position.y = 30;
                 group.current.rotation.y = data[frame]['psi'];
                 setFrame(frame+1)
-                // setCurrentState(data[frame])
             }
             tock.current = tick.current
         }
@@ -41,7 +42,6 @@ export default function Boat(props) {
                 castShadow
                 receiveShadow
                 geometry={nodes.Plane015_Ships_0.geometry}
-                material={materials.Ships}
                 scale={0.5}
             />
         </group>

@@ -7,8 +7,11 @@ import Ocean from './components/Ocean';
 import Boat from './components/Boat';
 import useStateSpace from './hooks/useStateSpace';
 import Path from './components/Path';
+import BoatKF from './components/BoatKF';
+import PathKF from './components/PathKF';
 
 export const Context = createContext()
+export const StateContext = createContext()
 
 
 function App() {
@@ -22,11 +25,13 @@ function App() {
           <Suspense fallback={null}>
             <ambientLight intensity={0.1} />
             <directionalLight color="red" position={[0, 0, 5]} />
-            <OrbitControls makeDefault minDistance={10} maxDistance={100} maxPolarAngle={1.4} />
+            <OrbitControls makeDefault minDistance={1} maxDistance={500} />
             <Sky />
             <Path />
+            <PathKF />
             <Ocean />
             <Boat />
+            <BoatKF />
           </Suspense>
         </Canvas>
       </div>
