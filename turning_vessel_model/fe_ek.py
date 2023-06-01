@@ -5,7 +5,6 @@ from vessel import Vessel
 from matplotlib import pyplot as plt
 import numpy as np
 from numpy.linalg import inv
-from numpy.random import randn
 
 def predict(t_tot, ti, dt, u_input):
 
@@ -17,16 +16,15 @@ def predict(t_tot, ti, dt, u_input):
 
     vs = Vessel(u_input)
     vs_exact = Vessel(u_input)
-    # Sk = 0.1*np.eye(2) # depends on number of inputs (inputsxinputs)
-    Sk = 0.1*np.eye(2)
+    Sk = 0.1*np.eye(2) # depends on number of inputs (inputsxinputs)
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
     theta = np.array([0,0]) # fault in any of the control inputs so same shape as inputs
     thetahat = np.array([0,0])
     llambda = 0.995
-    Cobvs = np.eye(6)
-    Qf = 0.01*np.eye(6) # shape proportional to number of states
-    Rf =  0.04*np.eye(6) # shape proportional to number of outputs
+    C = np.eye(6)
+    Qf = 0.00001*np.eye(6) # shape proportional to number of states
+    Rf =  0.00001*np.eye(6) # shape proportional to number of outputs
     a = 0.999 # random factor that they do not explain
 
     i = 0
@@ -73,31 +71,29 @@ def predict(t_tot, ti, dt, u_input):
 
         vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
 
-        y = Cobvs.dot(vs_exact.X)
+        y = C @ vs_exact.X
 
         Fk = vs.Fk(dt)
 
         Pminus = Fk @ Pplus @ Fk.T + Qf
-        Sigma = Cobvs @ Pminus @ Cobvs.T + Rf
-        K = Pminus @ Cobvs.T @ inv(Sigma)
-        Pplus = (np.eye(6) - (K @ Cobvs)) @ Pminus
+        Sigma = C @ Pminus @ C.T + Rf
+        K = Pminus @ C.T @ inv(Sigma)
+        Pplus = (np.eye(6) - (K @ C)) @ inv(Pminus)
 
-        ytilde =  y - (Cobvs @ vs.X)
+        ytilde =  y - (C @ vs.X)
 
         Qf = a * Qf + (1 - a) * (K * (ytilde @ ytilde.T) * K.T)
-
-        Rf = a*Rf + (1-a) * (ytilde @ ytilde.T + Cobvs @ Pminus @ Cobvs.T)
+        Rf = a * Rf + (1 - a) * ((ytilde @ ytilde.T) + (C @ Pminus @ C.T))
 
         # Compute fault estimation gains
-        Upsilon =  (np.eye(6) - K @ Cobvs) @ Fk @ Upsilon + (np.eye(6) - K @ Cobvs) @ phi
-        Omega = Cobvs @ Fk @ Upsilon + Cobvs @ phi
-
-        Lambda = inv(llambda * Sigma + Omega.dot(Sk).dot(Omega.T))
-
-        Tau = Sk @ Omega.T @ Lambda
-        Sk = (1 / llambda) * Sk - (1 / llambda) * Sk @ Omega.T.dot(Lambda).dot(Omega) @ Sk
+        Upsilon =  (np.eye(6) - K @ C) @ Fk @ Upsilon + (np.eye(6) - K @ C) @ phi
+        Omega = C @ Fk @ Upsilon + C @ phi
+        Lambda = inv((llambda * Sigma) + (Omega @ Sk @ Omega.T))
+        Tau = Sk @ (Omega.T @ Lambda)
+        Sk = (Sk / llambda) - ((Sk @ Omega.T @ Lambda @ Omega * Sk) / llambda)
 
         thetahat = thetahat + Tau.dot(ytilde)
+
         vs.Update(vs.A @ vs.X + dt*vs.F(vs_exact.X) + vs.B @ vs.u_input + phi @ thetahat + K @ ytilde + Upsilon @ Tau @ ytilde) # calcualtes x_hat
 
         timestamp.append(ti)
@@ -107,7 +103,6 @@ def predict(t_tot, ti, dt, u_input):
         theta_hat.append(thetahat)
 
         i += 1
-
         ti += dt 
 
     return np.array(timestamp).round(2), np.array(x_state), np.array(x_hat), np.array(theta_array), np.array(theta_hat)
