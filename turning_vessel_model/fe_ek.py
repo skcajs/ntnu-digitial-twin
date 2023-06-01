@@ -70,10 +70,10 @@ def predict(t_tot, ti, dt, u_input):
             vs.updateInput(u_input)
             theta = np.array([[0],[0]])
 
-        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
-        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
-        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
+        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
 
         y = Cobvs @ vs_exact.X
 
