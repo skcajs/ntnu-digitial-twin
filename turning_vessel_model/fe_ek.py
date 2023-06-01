@@ -24,8 +24,8 @@ def predict(t_tot, ti, dt, u_input):
     thetahat = np.array([[0],[0]])
     llambda = 0.995
     Cobvs = np.eye(6)
-    Qf = 0.0001*np.eye(6) # shape proportional to number of states
-    Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
+    Qf = 0.01*np.eye(6) # shape proportional to number of states
+    Rf =  0.04*np.eye(6) # shape proportional to number of outputs
     a = 0.999 # random factor that they do not explain
 
     i = 0
@@ -91,9 +91,9 @@ def predict(t_tot, ti, dt, u_input):
         # Compute fault estimation gains
         Upsilon =  (np.eye(6) - K @ Cobvs) @ Fk @ Upsilon + (np.eye(6) - K @ Cobvs) @ phi
         Omega = Cobvs @ Fk @ Upsilon + Cobvs @ phi
-        Lambda = inv((llambda * Sigma) + Omega @ Sk @ Omega.T)
+        Lambda = inv(llambda * Sigma + Omega @ Sk @ Omega.T)
         Tau = Sk @ Omega.T @ Lambda
-        Sk = (1 / llambda) * Sk - ( 1 / llambda) * Sk @ Omega.T @ Lambda @ Omega @ Sk
+        Sk = (1 / llambda) * Sk - (1 / llambda) * Sk @ Omega.T @ Lambda @ Omega @ Sk
 
         thetahat = thetahat + Tau @ ytilde
         vs.Update(vs.A @ vs.X + dt*vs.F(vs_exact.X) + vs.B @ vs.u_input + phi @ thetahat + K @ ytilde + Upsilon @ Tau @ ytilde) # calcualtes x_hat

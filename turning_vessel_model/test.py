@@ -10,15 +10,12 @@ t = np.arange(dt, tf + dt, dt)
 A = np.eye(6)
 B_t = np.array([[1, 0], [0, 0], [0, 1]])
 M = np.array([[25.8, 0, 0], [0, 33.8, 6.2], [0, 6.2, 2.76]])
-# B1 = np.zeros((3,2))
-# B2 = inv(M) @ B_t
-# B = np.array(np.concatenate((B1,B2)))
 B = dt * np.concatenate(([np.zeros((3, 2)), np.linalg.inv(M) @ B_t]))
 C = np.eye(6)
 
 # noise
-QF = 0.01 * np.eye(np.linalg.matrix_rank(A))
-RF = 0.04 * np.eye(np.linalg.matrix_rank(C))
+QF = 0.01 * np.eye(6)
+RF = 0.04 * np.eye(6)
 
 # Initialization
 x = np.array([0, 0, 0, 0, 0, 0])
@@ -28,7 +25,7 @@ theta = np.array([0, 0])
 thetabar = np.array([0, 0])
 thetahat = np.array([0, 0])
 temp = np.zeros(6)
-Pplus = np.eye(np.linalg.matrix_rank(A))
+Pplus = np.eye(6)
 
 # Parameter
 m22 = 5
@@ -76,17 +73,40 @@ def F(xi, Cv, Dv):
 for i in range(int(tf / dt)):
     Psi = -B @ np.diag(u)
 
-    if i > 500:
-        u = np.array([4, 0.2])
+    if(i == 100):
+        u = np.array([1, 0.1], dtype=float)
+    if(i == 600):
+        theta = np.array([0.001,0.12])
+    if(i == 1000):
+        u = np.array([1, 0.15], dtype=float)
+    if(i == 2000):
+        theta = np.array([0,0.025])
+    if(i == 2500):
+        u = np.array([1, 0.2], dtype=float)
+    if(i == 3000):
+        u = np.array([1, 0.001], dtype=float)
 
-    if i > 1000:
-        theta = np.array([0.3, 0.25])
+    if(i == 3200):
+        u = np.array([1, -0.05], dtype=float)
+    if(i == 3600):
+        theta = np.array([0.005,0.075])
+    if(i == 3800):
+        u = np.array([1, -0.005], dtype=float)
+    if(i == 4000):
+        u = np.array([1, -0.2], dtype=float)
+        theta = np.array([0,0])
 
-    if i > 1200:
-        u = np.array([1, -0.1])
+    # if i > 500:
+    #     u = np.array([4, 0.2])
 
-    if i > 1500:
-        theta = np.array([0, 0.141])
+    # if i > 1000:
+    #     theta = np.array([0, 0.25])
+
+    # if i > 1200:
+    #     u = np.array([1, -0.1])
+
+    # if i > 1500:
+    #     theta = np.array([0, 0.141])
 
     uArray.append(u)
     xArray.append(x)
@@ -151,6 +171,8 @@ thetaArray0 =  np.array([i[0] for i in thetaArray])
 thetaArray1 =  np.array([i[1] for i in thetaArray])
 thetahatArray0 =  np.array([i[0] for i in thetaArray])
 thetahatArray1 =  np.array([i[1] for i in thetaArray])
+uArray0 = np.array([i[0] for i in uArray])
+uArray1 = np.array([i[1] for i in uArray])
 
 plt.figure(1)
 plt.subplot(2, 2, 1)
@@ -188,17 +210,17 @@ plt.axvline(x=10, linestyle=':', color='b', linewidth=3)
 plt.axvline(x=15, linestyle=':', color='b', linewidth=3)
 plt.text(12, 1.5, 'fault', fontsize=18)
 
-# # Figure 2
-# plt.figure(2)
-# plt.plot(t, uArray[0, :], ':b', linewidth=3)
+# Figure 2
+plt.figure(2)
+plt.plot(t, uArray0, ':b', linewidth=3)
 # plt.hold(True)
-# plt.plot(t, uArray[1, :], ':r', linewidth=3)
-# plt.grid(True, which='both')
-# plt.ylabel('u', fontsize=36)
-# plt.xlabel('t (s)', fontsize=36)
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.legend(['a', 'r'], fontsize=18)
+plt.plot(t, uArray1, ':r', linewidth=3)
+plt.grid(True, which='both')
+plt.ylabel('u', fontsize=36)
+plt.xlabel('t (s)', fontsize=36)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+plt.legend(['a', 'r'], fontsize=18)
 
 # Figure 3 - Subplot 1
 plt.figure(3)
