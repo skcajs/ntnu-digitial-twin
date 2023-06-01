@@ -17,19 +17,22 @@ def predict(t_tot, ti, dt, u_input):
 
     vs = Vessel(u_input)
     vs_exact = Vessel(u_input)
-    Sk = np.eye(2) # depends on number of inputs (inputsxinputs)
+    Sk = 0.1*np.eye(2) # depends on number of inputs (inputsxinputs)
     Pplus = np.eye(6) # covariance matrix, states x states 
     Upsilon = np.zeros((6,2)) # 6 rows and 2 columns, states x inputs
     theta = np.array([[0],[0]]) # fault in any of the control inputs so same shape as inputs
     thetahat = np.array([[0],[0]])
+    llambda = 0.995
+    Cobvs = np.eye(6)
     Qf = 0.0001*np.eye(6) # shape proportional to number of states
     Rf =  0.0001*np.eye(6) # shape proportional to number of outputs
-    a = 1 # random factor that they do not explain
+    a = 0.999 # random factor that they do not explain
 
-    time_range = t_tot / dt
     i = 0
 
     while ti < t_tot:
+
+        phi = vs.phi()
 
         if(i == 100):
             u_input = np.array([[u_input[0][0]], [min(u_input[1][0] + 0.01, 0.2)]], dtype=float)
@@ -67,30 +70,33 @@ def predict(t_tot, ti, dt, u_input):
             vs.updateInput(u_input)
             theta = np.array([[0],[0]])
 
-        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
+        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F(vs_exact.X) + dt*vs_exact.B @ vs_exact.u_input) # calcualtes x
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + Qf  @ (dt * randn(6,1))) # calcualtes x
         # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
-        vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta + Qf  @ (dt * randn(6,1))) # calcualtes x
+        # vs_exact.Update(vs_exact.A @ vs_exact.X + dt*vs_exact.F() + dt*vs_exact.B @ vs_exact.u_input + vs_exact.phi() @ theta) # calcualtes x
 
-        y = vs_exact.Cobvs @ vs_exact.X + Rf  @ (dt * randn(6,1))
+        y = Cobvs @ vs_exact.X
 
-        Pminus = vs.Fk(dt) @ Pplus @ vs.Fk(dt).T + Qf
-        Sigma = vs.Cobvs @ Pminus @ vs.Cobvs.T + Rf
-        K = Pminus @ vs.Cobvs.T @ inv(Sigma)
-        Pplus = (np.eye(6) - (K @ vs.Cobvs)) @ Pminus
+        Fk = vs.Fk(dt)
 
-        Qf = a*Qf + (1-a) * (K@vs.ytilde(y)@vs.ytilde(y).T@K)
-        Rf = a*Rf + (1-a) * (vs.ytilde(y)@vs.ytilde(y).T + vs.Cobvs @ Pplus @ vs.Cobvs.T)
+        Pminus = Fk @ Pplus @ Fk.T + Qf
+        Sigma = Cobvs @ Pminus @ Cobvs.T + Rf
+        K = Pminus @ Cobvs.T @ inv(Sigma)
+        Pplus = (np.eye(6) - (K @ Cobvs)) @ Pminus
 
-        Upsilon =  ((np.eye(6) - K @ vs.Cobvs) @ vs.Fk(dt) @ Upsilon) + (np.eye(6) - K @ vs.Cobvs) @ vs.phi()
-        Omega = vs.Cobvs @ vs.Fk(dt) @ Upsilon + vs.Cobvs @ vs.phi()
-        
-        Lambda = inv((vs.llambda * Sigma) + (Omega@Sk@Omega.T))
+        ytilde =  y - (Cobvs @ vs.X)
+        Qf = a * Qf + (1 - a) * (K @ (ytilde @ ytilde.T) @ K.T)
+        Rf = a*Rf + (1-a) * (ytilde @ ytilde.T + Cobvs @ Pminus @ Cobvs.T)
+
+        # Compute fault estimation gains
+        Upsilon =  (np.eye(6) - K @ Cobvs) @ Fk @ Upsilon + (np.eye(6) - K @ Cobvs) @ phi
+        Omega = Cobvs @ Fk @ Upsilon + Cobvs @ phi
+        Lambda = inv((llambda * Sigma) + Omega @ Sk @ Omega.T)
         Tau = Sk @ Omega.T @ Lambda
-        Sk = (1/vs.llambda)*Sk - (1/vs.llambda)*Omega.T@Lambda@Omega@Sk 
-        thetahat = thetahat + Tau @ vs.ytilde(y)
+        Sk = (1 / llambda) * Sk - ( 1 / llambda) * Sk @ Omega.T @ Lambda @ Omega @ Sk
 
-        vs.Update(vs.A @ vs.X + dt*vs.F() + vs.B @ vs.u_input + vs.phi() @ thetahat + K @ vs.ytilde(y) + Upsilon @ Tau @ vs.ytilde(y)) # calcualtes x_hat
+        thetahat = thetahat + Tau @ ytilde
+        vs.Update(vs.A @ vs.X + dt*vs.F(vs_exact.X) + vs.B @ vs.u_input + phi @ thetahat + K @ ytilde + Upsilon @ Tau @ ytilde) # calcualtes x_hat
 
         timestamp.append(ti)
         x_state.append(vs_exact.X)
@@ -183,5 +189,5 @@ if __name__ == '__main__':
         ti=0,
         dt=0.01,
         u_input=np.array([[1], [0]], dtype=float))
-    plot_results()
-    # theta_plots()
+    # plot_results()
+    theta_plots()
