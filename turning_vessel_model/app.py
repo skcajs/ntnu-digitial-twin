@@ -14,18 +14,18 @@ def hello_world():
         t_tot=80,
         ti=0,
         dt=0.01,
-        u_input=np.array([[1], [0]], dtype=float))
+        u_input=np.array([1, 0], dtype=float))
 
     new_dict = {}
 
     for i in range(len(timestamp)):
         inner_dict = {}
-        inner_dict['x'] = x_state[i][0][0]
-        inner_dict['y'] = x_state[i][1][0]
-        inner_dict['psi'] = x_state[i][2][0]
-        inner_dict['u'] = x_state[i][3][0]
-        inner_dict['v'] = x_state[i][4][0]
-        inner_dict['r'] = x_state[i][5][0]
+        inner_dict['x'] = x_state[i][0]
+        inner_dict['y'] = x_state[i][1]
+        inner_dict['psi'] = x_state[i][2]
+        inner_dict['u'] = x_state[i][3]
+        inner_dict['v'] = x_state[i][4]
+        inner_dict['r'] = x_state[i][5]
         inner_dict['t'] = timestamp[i]
         new_dict[i] = inner_dict
 
